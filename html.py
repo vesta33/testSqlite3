@@ -3,6 +3,7 @@ import HTML
 import sqlite3
 import re
 import datetime
+from urllib.request import urlopen
 import types
 
 f = open('links.html','w')
@@ -23,14 +24,21 @@ for i in range(len(test)):
         extractLink = (val2[0])
         extractTime = (linktext.split(', ')[2][0:-1])
 
-        a = list((
-            val1,
-            extractLink,
-            datetime.datetime.fromtimestamp(
-              int(extractTime)
-                ).strftime('%d.%m.%Y')
-            ))
-        x.append(a)
+        htmlFile = urlopen(extractLink)
+        html = htmlFile.read()
+        regexp_link = '''<title>(.*)</title>'''
+        pattern = re.compile(regexp_link)
+        links = re.findall(pattern, str(html))
+        print(links)
+        if len(links) != 0:
+            a = list((
+                val1,
+                ("""<a href=""" +  extractLink + """ target="_blank"> """ + links[0] + """</a>"""),
+                datetime.datetime.fromtimestamp(
+                  int(extractTime)
+                    ).strftime('%d.%m.%Y')
+                ))
+            x.append(a)
 print(x)
 conn.close()
 
